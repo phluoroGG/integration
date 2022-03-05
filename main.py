@@ -2,26 +2,23 @@ import random
 
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.integrate as sp
 
 
 def function(x):
     return x ** 4 * np.sin(x) + 1 / np.sqrt(x + 1)
 
 
-def indefinite_integral(x):
-    return np.sin(x) * (4 * x ** 3 - 24 * x) + np.cos(x) * (- x ** 4 + 12 * x ** 2 - 24) + 2 * np.sqrt(x + 1)
-
-
-def definite_integral(a, b):
-    return indefinite_integral(b) - indefinite_integral(a)
+def scipy_integral(a, b):
+    return sp.quad(function, a, b)[0]
 
 
 def function_xy(x, y):
     return y ** 4 * np.sin(x) + 1 / np.sqrt(x + 1)
 
 
-def definite_integral_xy():
-    return (273 - 243 * np.cos(3)) / 5                  # a = 0, b = 3, c = 0, d = 3
+def scipy_integral_xy(a, b, c, d):
+    return sp.dblquad(function_xy, a, b, c, d)[0]
 
 
 def rectangle_method(a, b, step):
@@ -31,7 +28,7 @@ def rectangle_method(a, b, step):
     for i in range(n):
         sum_ += function(a + i * step + step / 2)
     sum_ *= step
-    sum_ += remainder * (function(b - remainder / 2))
+    sum_ += remainder * function(b - remainder / 2)
     return sum_
 
 
@@ -145,7 +142,31 @@ def monte_carlo_method_xy(a, b, c, d, n):
     return (b - a) * (d - c) * sum_ / n
 
 
-def draw_function():
+def rectangle_method_xy(a, b, c, d, step):
+    n = int((b - a) // step)
+    remainder_x = (b - a) % step
+    k = int((d - c) // step)
+    remainder_y = (d - c) % step
+    sum_ = 0
+    for j in range(k):
+        for i in range(n):
+            sum_ += function_xy(a + i * step + step / 2, c + j * step + step / 2)
+    sum_ *= step ** 2
+    sum_remainder_x = 0
+    for j in range(k):
+        sum_remainder_x += function_xy(b - remainder_x / 2, c + j * step + step / 2)
+    sum_remainder_x *= step * remainder_x
+    sum_ += sum_remainder_x
+    sum_remainder_y = 0
+    for i in range(n):
+        sum_remainder_y += function_xy(a + i * step + step / 2, d - remainder_y / 2,)
+    sum_remainder_y *= step * remainder_y
+    sum_ += sum_remainder_y
+    sum_ += remainder_x * remainder_y * (function_xy(b - remainder_x / 2, d - remainder_y / 2))
+    return sum_
+
+
+def draw_function(a, b):
     """
     x = np.arange(-5, 5, 0.1)
     y = np.arange(-5, 5, 0.1)
@@ -169,11 +190,11 @@ def draw_function():
     i = 1
     while i > 1e-3:
         values_x.append(i)
-        values_rectangle.append(definite_integral(0, 3) - rectangle_method(0, 3, i))
-        values_trapezoidal.append(definite_integral(0, 3) - trapezoidal_method(0, 3, i))
-        values_parabola.append(definite_integral(0, 3) - parabola_method(0, 3, i))
-        values_cubic.append(definite_integral(0, 3) - cubic_parabola_method(0, 3, i))
-        values_boole.append(definite_integral(0, 3) - boole_method(0, 3, i))
+        values_rectangle.append(scipy_integral(a, b) - rectangle_method(a, b, i))
+        values_trapezoidal.append(scipy_integral(a, b) - trapezoidal_method(a, b, i))
+        values_parabola.append(scipy_integral(a, b) - parabola_method(a, b, i))
+        values_cubic.append(scipy_integral(a, b) - cubic_parabola_method(a, b, i))
+        values_boole.append(scipy_integral(a, b) - boole_method(a, b, i))
         i -= 0.01
     fig, ax = plt.subplots()
     ax.plot(values_x, values_rectangle, label='rectangle')
@@ -183,7 +204,7 @@ def draw_function():
     ax.plot(values_x, values_boole, label='boole')
     ax.invert_xaxis()
     ax.legend()
-    ax.set(xlabel='x', ylabel='f', title='5 * (np.sin(x) - 3) ** 2 + 1')
+    ax.set(xlabel='step', ylabel='error', title='x ** 4 * np.sin(x) + 1 / np.sqrt(x + 1) error graph')
     ax.grid()
 
     plt.show()
@@ -195,34 +216,38 @@ if __name__ == '__main__':
     c_ = 0
     d_ = 3
     step_ = 1e-3
+    n_ = 1000
+    step_xy = 1e-2
 
-    draw_function()
+    draw_function(a_, b_)
 
-    print('analytical integral value at a = {0} and b = {1} is {2}'
-          .format(a_, b_, definite_integral(a_, b_)))
-    print('numerical integral value at a = {0} and b = {1} with step = {2} is {3} (rectangle method)'
+    print('integral value at a = {0} and b = {1} is {2} (scipy integration)'
+          .format(a_, b_, scipy_integral(a_, b_)))
+    print('integral value at a = {0} and b = {1} with step = {2} is {3} (rectangle method)'
           .format(a_, b_, step_, rectangle_method(a_, b_, step_)))
-    print('numerical integral value at a = {0} and b = {1} with step = {2} is {3} (trapezoidal method)'
+    print('integral value at a = {0} and b = {1} with step = {2} is {3} (trapezoidal method)'
           .format(a_, b_, step_, trapezoidal_method(a_, b_, step_)))
-    print('numerical integral value at a = {0} and b = {1} with step = {2} is {3} (parabola method)'
+    print('integral value at a = {0} and b = {1} with step = {2} is {3} (parabola method)'
           .format(a_, b_, step_, parabola_method(a_, b_, step_)))
-    print('numerical integral value at a = {0} and b = {1} with step = {2} is {3} (cubic parabola method)'
+    print('integral value at a = {0} and b = {1} with step = {2} is {3} (cubic parabola method)'
           .format(a_, b_, step_, cubic_parabola_method(a_, b_, step_)))
-    print('numerical integral value at a = {0} and b = {1} with step = {2} is {3} (boole method)'
+    print('integral value at a = {0} and b = {1} with step = {2} is {3} (boole method)'
           .format(a_, b_, step_, boole_method(a_, b_, step_)))
-    print('numerical integral value at a = {0} and b = {1} is {2} (gauss method - 2)'
+    print('integral value at a = {0} and b = {1} is {2} (gauss method - 2)'
           .format(a_, b_, gauss_method(a_, b_, 2)))
-    print('numerical integral value at a = {0} and b = {1} is {2} (gauss method - 3)'
+    print('integral value at a = {0} and b = {1} is {2} (gauss method - 3)'
           .format(a_, b_, gauss_method(a_, b_, 3)))
-    print('numerical integral value at a = {0} and b = {1} is {2} (gauss method - 4)'
+    print('integral value at a = {0} and b = {1} is {2} (gauss method - 4)'
           .format(a_, b_, gauss_method(a_, b_, 4)))
-    print('numerical integral value at a = {0} and b = {1} is {2} (gauss method - 5)'
+    print('integral value at a = {0} and b = {1} is {2} (gauss method - 5)'
           .format(a_, b_, gauss_method(a_, b_, 5)))
-    print('numerical integral value at a = {0} and b = {1} is {2} (gauss method - 6)'
+    print('integral value at a = {0} and b = {1} is {2} (gauss method - 6)'
           .format(a_, b_, gauss_method(a_, b_, 6)))
-    print('numerical integral value at a = {0} and b = {1} with n = {2} is {3} (monte carlo method)'
-          .format(a_, b_, 100, monte_carlo_method(a_, b_, 100)))
-    print('analytical integral value at a = {0} b = {1} c = {2} d = {3} is {4}'
-          .format(a_, b_,  c_, d_, definite_integral_xy()))
-    print('numerical integral value at a = {0} b = {1} c = {2} d = {3} with n = {4} is {5} (monte carlo method)'
-          .format(a_, b_,  c_, d_, 100, monte_carlo_method_xy(a_, b_, c_, d_, 100)))
+    print('integral value at a = {0} and b = {1} with n = {2} is {3} (monte carlo method)'
+          .format(a_, b_, n_, monte_carlo_method(a_, b_, n_)))
+    print('integral value at a = {0} b = {1} c = {2} d = {3} is {4} (scipy double integration)'
+          .format(a_, b_,  c_, d_, scipy_integral_xy(a_, b_, c_, d_)))
+    print('integral value at a = {0} b = {1} c = {2} d = {3} with step = {4} is {5} (rectangle method)'
+          .format(a_, b_, c_, d_, step_xy, rectangle_method_xy(a_, b_, c_, d_, step_xy)))
+    print('integral value at a = {0} b = {1} c = {2} d = {3} with n = {4} is {5} (monte carlo method)'
+          .format(a_, b_,  c_, d_, n_, monte_carlo_method_xy(a_, b_, c_, d_, n_)))
