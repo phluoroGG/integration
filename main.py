@@ -114,11 +114,11 @@ def gauss_method(a, b, n):
                               + 0.6521 * function((a + b) / 2 + (b - a) / 2 * 0.3399)
                               + 0.3478 * function((a + b) / 2 + (b - a) / 2 * 0.8611))
     if n == 5:
-        return (b - a) / 2 * (0.4786 * function((a + b) / 2 - (b - a) / 2 * 0.9061)
-                              + 0.2369 * function((a + b) / 2 - (b - a) / 2 * 0.5384)
+        return (b - a) / 2 * (0.2369 * function((a + b) / 2 - (b - a) / 2 * 0.9061)
+                              + 0.4786 * function((a + b) / 2 - (b - a) / 2 * 0.5384)
                               + 0.5688 * function((a + b) / 2)
-                              + 0.2369 * function((a + b) / 2 + (b - a) / 2 * 0.5384)
-                              + 0.4786 * function((a + b) / 2 + (b - a) / 2 * 0.9061))
+                              + 0.4786 * function((a + b) / 2 + (b - a) / 2 * 0.5384)
+                              + 0.2369 * function((a + b) / 2 + (b - a) / 2 * 0.9061))
     if n == 6:
         return (b - a) / 2 * (0.1713 * function((a + b) / 2 - (b - a) / 2 * 0.9324)
                               + 0.3607 * function((a + b) / 2 - (b - a) / 2 * 0.6612)
@@ -159,7 +159,7 @@ def rectangle_method_xy(a, b, c, d, step):
     sum_ += sum_remainder_x
     sum_remainder_y = 0
     for i in range(n):
-        sum_remainder_y += function_xy(a + i * step + step / 2, d - remainder_y / 2,)
+        sum_remainder_y += function_xy(a + i * step + step / 2, d - remainder_y / 2, )
     sum_remainder_y *= step * remainder_y
     sum_ += sum_remainder_y
     sum_ += remainder_x * remainder_y * (function_xy(b - remainder_x / 2, d - remainder_y / 2))
@@ -167,20 +167,6 @@ def rectangle_method_xy(a, b, c, d, step):
 
 
 def draw_function(a, b):
-    """
-    x = np.arange(-5, 5, 0.1)
-    y = np.arange(-5, 5, 0.1)
-    x_grid, y_grid = np.meshgrid(x, y)
-    z = function(x_grid, y_grid)
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.set(xlabel='x', ylabel='y', zlabel='z',
-           title='np.log(y) ** 2 / (np.tan(x) ** 2 + 2) - np.sin(np.log(x)) / (y ** 2 + 1)')
-    ax.plot_surface(x_grid, y_grid, z, cmap='Wistia')
-
-    plt.show()
-    """
     values_x = []
     values_rectangle = []
     values_trapezoidal = []
@@ -246,8 +232,8 @@ if __name__ == '__main__':
     print('integral value at a = {0} and b = {1} with n = {2} is {3} (monte carlo method)'
           .format(a_, b_, n_, monte_carlo_method(a_, b_, n_)))
     print('integral value at a = {0} b = {1} c = {2} d = {3} is {4} (scipy double integration)'
-          .format(a_, b_,  c_, d_, scipy_integral_xy(a_, b_, c_, d_)))
+          .format(a_, b_, c_, d_, scipy_integral_xy(a_, b_, c_, d_)))
     print('integral value at a = {0} b = {1} c = {2} d = {3} with step = {4} is {5} (rectangle method)'
           .format(a_, b_, c_, d_, step_xy, rectangle_method_xy(a_, b_, c_, d_, step_xy)))
     print('integral value at a = {0} b = {1} c = {2} d = {3} with n = {4} is {5} (monte carlo method)'
-          .format(a_, b_,  c_, d_, n_, monte_carlo_method_xy(a_, b_, c_, d_, n_)))
+          .format(a_, b_, c_, d_, n_, monte_carlo_method_xy(a_, b_, c_, d_, n_)))
